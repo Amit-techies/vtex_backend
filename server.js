@@ -55,6 +55,47 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
+
+
+// Fetch customer data by ID (GET)
+app.get('/api/customers/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const response = await axios.get(`${VTEX_API_URL}/api/dataentities/CL/documents/${id}`, { headers });
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error fetching customer:', error.message);
+    res.status(500).json({
+      error: 'Failed to fetch customer data',
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
+// Update customer data by ID (PUT)
+app.put('/api/customers/:id', async (req, res) => {
+  const { id } = req.params;
+  const customerData = req.body;
+
+  try {
+    const response = await axios.put(
+      `${VTEX_API_URL}/api/dataentities/CL/documents/${id}`,
+      customerData,
+      { headers }
+    );
+    res.json(response.data); // Return the updated customer data
+  } catch (error) {
+    console.error('Error updating customer:', error.message);
+    res.status(500).json({
+      error: 'Failed to update customer',
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
+
+
 // Products in a specific collection route
 app.get('/api/collections/:collectionId/products', async (req, res) => {
   const { collectionId } = req.params;
