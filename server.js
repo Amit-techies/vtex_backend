@@ -23,7 +23,37 @@ app.get('/', (req, res) => {
   res.send('Welcome to the VTEX API server!');
 });
 
+// Route to create a new customer profile
+app.post('/api/customers', async (req, res) => {
+  const { firstName, lastName, email, phone, document } = req.body;
 
+  // Define the payload for the customer profile
+  const payload = {
+    firstName,
+    lastName,
+    email,
+    phone,
+    document, // e.g., National ID or Passport Number
+  };
+
+  try {
+    // Make POST request to VTEX API
+    const response = await axios.post(
+      `${VTEX_API_URL}/api/dataentities/CL/documents`,
+      payload,
+      { headers }
+    );
+
+    // Respond with the VTEX response
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error creating customer profile:', error.message);
+    res.status(500).json({
+      error: 'Failed to create customer profile',
+      details: error.response?.data || error.message,
+    });
+  }
+});
 
 // Products in a specific collection route
 app.get('/api/collections/:collectionId/products', async (req, res) => {
