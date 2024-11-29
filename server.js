@@ -25,15 +25,14 @@ app.get('/', (req, res) => {
 
 // Route to create a new customer profile
 app.post('/api/customers', async (req, res) => {
-  const { firstName, lastName, email, phone, document } = req.body;
+  const { firstName, lastName, email, phone } = req.body;
 
   // Define the payload for the customer profile
   const payload = {
     firstName,
     lastName,
     email,
-    phone,
-    document, // e.g., National ID or Passport Number
+    phone    
   };
 
   try {
