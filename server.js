@@ -84,6 +84,62 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
+
+
+
+app.post('/api/addresses', async (req, res) => {
+  const {
+    addressName,
+    addressType,
+    city,
+    complement,
+    country,
+    postalCode,
+    receiverName,
+    reference,
+    state,
+    street,
+    neighborhood,
+    number,
+    userId,
+  } = req.body;
+
+  const addressData = {
+    addressName,
+    addressType,
+    city,
+    complement,
+    country,
+    postalCode,
+    receiverName,
+    reference,
+    state,
+    street,
+    neighborhood,
+    number,
+    userId,
+  };
+
+  try {
+    const response = await axios.post(
+      `${VTEX_API_URL}/api/dataentities/AD/documents`,
+      addressData,
+      { headers }
+    );
+
+    res.status(200).json({
+      message: 'Address created successfully.',
+      data: response.data,
+    });
+  } catch (error) {
+    console.error('Error creating address:', error.response?.data || error.message);
+    res.status(500).json({
+      error: 'Failed to create address.',
+      details: error.response?.data || error.message,
+    });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
