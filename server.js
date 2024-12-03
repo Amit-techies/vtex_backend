@@ -23,77 +23,53 @@ app.get('/', (req, res) => {
   res.send('Welcome to the VTEX API server!');
 });
 
+
 // Route to create a new customer profile
 app.post('/api/customers', async (req, res) => {
-  const { firstName, lastName, email, phone, document } = req.body;
-
-  // Define the payload for the customer profile
-  const payload = {
+  const {
+    email,
     firstName,
     lastName,
-    email,
     phone,
-    document, // e.g., National ID or Passport Number
+    documentType,
+    document,
+    isCorporate,
+    isNewsletterOptIn,
+    localeDefault,
+  } = req.body;
+
+  // Customer profile payload
+  const customerData = {
+    email,
+    firstName,
+    lastName,
+    phone,
+    documentType,
+    document,
+    isCorporate,
+    isNewsletterOptIn,
+    localeDefault,
   };
 
   try {
-    // Make POST request to VTEX API
     const response = await axios.post(
       `${VTEX_API_URL}/api/dataentities/CL/documents`,
-      payload,
-      { headers }
-    );
-
-    // Respond with the VTEX response
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error creating customer profile:', error.message);
-    res.status(500).json({
-      error: 'Failed to create customer profile',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-
-
-// Fetch customer data by ID (GET)
-app.get('/api/customers/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const response = await axios.get(`${VTEX_API_URL}/api/dataentities/CL/documents/${id}`, { headers });
-    res.json(response.data);
-  } catch (error) {
-    console.error('Error fetching customer:', error.message);
-    res.status(500).json({
-      error: 'Failed to fetch customer data',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-// Update customer data by ID (PUT)
-app.put('/api/customers/:id', async (req, res) => {
-  const { id } = req.params;
-  const customerData = req.body;
-
-  try {
-    const response = await axios.put(
-      `${VTEX_API_URL}/api/dataentities/CL/documents/${id}`,
       customerData,
       { headers }
     );
-    res.json(response.data); // Return the updated customer data
+
+    res.status(200).json({
+      message: 'Customer profile created successfully.',
+      data: response.data,
+    });
   } catch (error) {
-    console.error('Error updating customer:', error.message);
+    console.error('Error creating customer profile:', error.response?.data || error.message);
     res.status(500).json({
-      error: 'Failed to update customer',
+      error: 'Failed to create customer profile.',
       details: error.response?.data || error.message,
     });
   }
 });
-
 
 
 // Products in a specific collection route
