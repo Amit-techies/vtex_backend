@@ -72,24 +72,20 @@ app.post('/api/customers', async (req, res) => {
 });
 
 
-// Products in a specific collection route
-app.get('/api/collections/:collectionId/products', async (req, res) => {
-  const { collectionId } = req.params;
+app.get('/api/customers/:customerId', async (req, res) => {
+  const { customerId } = req.params;
 
   try {
-    const response = await axios.get(
-      `${VTEX_API_URL}/api/catalog/pvt/collection/${collectionId}/products`,
-      { headers }
-    );
-    res.json(response.data);
+    // Fetch customer details from your database or VTEX API
+    const customer = await getCustomerById(customerId); // Replace with actual function
+    res.json(customer);
   } catch (error) {
-    console.error('Error fetching products from collection:', error.message);
-    res.status(500).json({
-      error: 'Failed to fetch products from collection',
-      details: error.response?.data || error.message,
-    });
+    res.status(500).json({ error: 'Failed to fetch customer details.' });
   }
 });
+
+
+
 
 // Start server
 app.listen(PORT, () => {
