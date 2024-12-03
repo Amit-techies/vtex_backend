@@ -6,27 +6,63 @@ const cors = require('cors');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = 5000;
 
 // Middleware
 app.use(express.json());
-app.use(cors());
 
-// VTEX API Configuration
+// Configure CORS
+const allowedOrigins = ['https://vtex-homepage.onrender.com'];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  })
+);
+
 const VTEX_API_URL = process.env.VTEX_API_URL;
 const headers = {
   'X-VTEX-API-AppKey': process.env.VTEX_APP_KEY,
   'X-VTEX-API-AppToken': process.env.VTEX_APP_TOKEN,
 };
 
-// Routes
+// Root route
 app.get('/', (req, res) => {
   res.send('Welcome to the VTEX API server!');
 });
 
-// Create a new customer profile
+// Route to create a new customer profile
 app.post('/api/customers', async (req, res) => {
-  const customerData = req.body;
+  const {
+    email,
+    firstName,
+    lastName,
+    phone,
+    documentType,
+    document,
+    isCorporate,
+    isNewsletterOptIn,
+    localeDefault,
+  } = req.body;
+
+  const customerData = {
+    email,
+    firstName,
+    lastName,
+    phone,
+    documentType,
+    document,
+    isCorporate,
+    isNewsletterOptIn,
+    localeDefault,
+  };
 
   try {
     const response = await axios.post(
@@ -34,6 +70,7 @@ app.post('/api/customers', async (req, res) => {
       customerData,
       { headers }
     );
+
     res.status(200).json({
       message: 'Customer profile created successfully.',
       data: response.data,
@@ -47,28 +84,7 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-// Create a new address
-app.post('/api/addresses', async (req, res) => {
-  try {
-    const response = await axios.post(
-      `${VTEX_API_URL}/api/dataentities/AD/documents`,
-      req.body,
-      { headers }
-    );
-    res.status(201).json({
-      message: 'Address created successfully.',
-      data: response.data,
-    });
-  } catch (error) {
-    console.error('Error creating address:', error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Failed to create address.',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-// Start the server
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
