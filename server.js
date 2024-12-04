@@ -3,19 +3,20 @@ const axios = require('axios');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
+// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
 const PORT = 5000;
 
-// Middleware
+// Middleware to parse JSON and handle CORS
 app.use(express.json());
 
-// Configure CORS
+// Configure allowed origins for CORS
 const allowedOrigins = ['https://vtex-homepage.onrender.com'];
 app.use(
   cors({
-    origin: function (origin, callback) {
+    origin: (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -27,13 +28,14 @@ app.use(
   })
 );
 
+// VTEX API details
 const VTEX_API_URL = process.env.VTEX_API_URL;
 const headers = {
   'X-VTEX-API-AppKey': process.env.VTEX_APP_KEY,
   'X-VTEX-API-AppToken': process.env.VTEX_APP_TOKEN,
 };
 
-// Root route
+// Root route to check server status
 app.get('/', (req, res) => {
   res.send('Welcome to the VTEX API server!');
 });
@@ -84,9 +86,7 @@ app.post('/api/customers', async (req, res) => {
   }
 });
 
-
-
-
+// Route to create a new address
 app.post('/api/addresses', async (req, res) => {
   const {
     addressName,
@@ -140,7 +140,7 @@ app.post('/api/addresses', async (req, res) => {
   }
 });
 
-// Start server
+// Start server on the defined port
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
