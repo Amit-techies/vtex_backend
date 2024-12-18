@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: 'https://vtex-homepage.onrender.com', credentials: true }));
 
 const SECRET_KEY = 'your_secret_key';
 
