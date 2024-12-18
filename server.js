@@ -1,146 +1,61 @@
 const express = require('express');
-const axios = require('axios');
-const dotenv = require('dotenv');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 
-// Configure CORS
-const allowedOrigins = ['https://vtex-homepage.onrender.com'];
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  })
-);
+const SECRET_KEY = 'your_secret_key';
 
-const VTEX_API_URL = process.env.VTEX_API_URL;
-const headers = {
-  'X-VTEX-API-AppKey': process.env.VTEX_APP_KEY,
-  'X-VTEX-API-AppToken': process.env.VTEX_APP_TOKEN,
-};
+// Dummy user data (replace with database logic)
+const users = [
+  { email: 'test@example.com', password: 'password123', firstName: 'John', lastName: 'Doe' },
+];
+
+// Login route
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+
+  const user = users.find((u) => u.email === email && u.password === password);
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  // Generate JWT token
+  const token = jwt.sign({ email: user.email }, SECRET_KEY, { expiresIn: '1h' });
+  res.json({ token });
+});
+
+// Protected profile route
+app.get('/api/profile', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+
+  jwt.verify(token, SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(403).json({ error: 'Invalid token' });
+
+    const user = users.find((u) => u.email === decoded.email);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ email: user.email, firstName: user.firstName, lastName: user.lastName });
+  });
+});
 
 // Root route
 app.get('/', (req, res) => {
-  res.send('Welcome to the VTEX API server!');
-});
-
-// Route to create a new customer profile
-app.post('/api/customers', async (req, res) => {
-  const {
-    email,
-    firstName,
-    lastName,
-    phone,
-    documentType,
-    document,
-    isCorporate,
-    isNewsletterOptIn,
-    localeDefault,
-  } = req.body;
-
-  const customerData = {
-    email,
-    firstName,
-    lastName,
-    phone,
-    documentType,
-    document,
-    isCorporate,
-    isNewsletterOptIn,
-    localeDefault,
-  };
-
-  try {
-    const response = await axios.post(
-      `${VTEX_API_URL}/api/dataentities/CL/documents`,
-      customerData,
-      { headers }
-    );
-
-    res.status(200).json({
-      message: 'Customer profile created successfully.',
-      data: response.data,
-    });
-  } catch (error) {
-    console.error('Error creating customer profile:', error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Failed to create customer profile.',
-      details: error.response?.data || error.message,
-    });
-  }
-});
-
-
-
-
-app.post('/api/addresses', async (req, res) => {
-  const {
-    addressName,
-    addressType,
-    city,
-    complement,
-    country,
-    postalCode,
-    receiverName,
-    reference,
-    state,
-    street,
-    neighborhood,
-    number,
-    userId,
-  } = req.body;
-
-  const addressData = {
-    addressName,
-    addressType,
-    city,
-    complement,
-    country,
-    postalCode,
-    receiverName,
-    reference,
-    state,
-    street,
-    neighborhood,
-    number,
-    userId,
-  };
-
-  try {
-    const response = await axios.post(
-      `${VTEX_API_URL}/api/dataentities/AD/documents`,
-      addressData,
-      { headers }
-    );
-
-    res.status(200).json({
-      message: 'Address created successfully.',
-      data: response.data,
-    });
-  } catch (error) {
-    console.error('Error creating address:', error.response?.data || error.message);
-    res.status(500).json({
-      error: 'Failed to create address.',
-      details: error.response?.data || error.message,
-    });
-  }
+  res.send('VTEX Backend Running!');
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running at https://vtex-backend-3.onrender.com/`);
 });
